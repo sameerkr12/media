@@ -45,8 +45,22 @@ post({'action':'profile','id':'sameer','name':'No','bio':''},403,c)
 post({'action':'creatorEmail','id':'sameer','email':'bad@example.test'},403,c)
 post({'action':'create','creatorId':'krishna','title':'Creator-owned QA link','brand':'Test','destination':'https://example.org/','slug':slug+'own'},200,c)
 assert all(l['creator_id']=='krishna' for l in state(c)['links'])
+# Appearance is persisted per creator and validated server-side.
+post({'action':'appearance','id':'krishna','theme':'midnight','layout':'pill','font':'editorial'},200,c)
+page=requests.get(BASE+'/c/trade_with_krishna002').text
+assert 'theme-midnight layout-pill font-editorial' in page
+post({'action':'appearance','id':'sameer','theme':'pearl','layout':'rounded','font':'modern'},403,c)
+post({'action':'appearance','id':'krishna','theme':'invalid','layout':'pill','font':'modern'},400,c)
+# Query parameters cannot escape a creator's authorization boundary.
+scoped=a.get(BASE+'/api/tracker?creator=sameer').json()
+assert all(l['creator_id']=='sameer' for l in scoped['links'])
+assert sum(x['clicks'] for x in scoped['daily'])==2
+assert sum(x['clicks'] for x in scoped['breakdown'])==2
+assert all(l['creator_id']=='krishna' for l in c.get(BASE+'/api/tracker?creator=sameer').json()['links'])
+# Local HTTP keeps the visitor cookie usable without weakening HTTPS cookies.
+assert 'Secure' not in r.headers.get('Set-Cookie','')
 # Removing the assignment revokes access, including the previously pinned user id.
 post({'action':'creatorEmail','id':'krishna','email':''})
 assert state(c)['notAssigned']
 post({'action':'create','creatorId':'krishna','title':'No','destination':'https://example.org/'},403,c)
-print('PASS: five creator pages, tracked redirects, cookie uniqueness, bot/prefetch/HEAD exclusions, pause, expiry validation, URL validation, CSRF, scoped creator reads/writes, access revocation, and anonymous rejection.')
+print('PASS: theme persistence, theme validation, appearance authorization, scoped analytics, local cookie support; five creator pages, tracked redirects, cookie uniqueness, bot/prefetch/HEAD exclusions, pause, expiry validation, URL validation, CSRF, scoped creator reads/writes, access revocation, and anonymous rejection.')

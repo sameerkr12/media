@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 export const creators=sqliteTable('creators',{
- id:text('id').primaryKey(),name:text('name').notNull(),handle:text('handle').notNull(),email:text('email'),userId:text('user_id'),bio:text('bio').notNull().default(''),createdAt:text('created_at').notNull()
+ id:text('id').primaryKey(),name:text('name').notNull(),handle:text('handle').notNull(),email:text('email'),userId:text('user_id'),bio:text('bio').notNull().default(''),theme:text('theme').notNull().default('empire'),layout:text('layout').notNull().default('rounded'),font:text('font').notNull().default('modern'),createdAt:text('created_at').notNull()
 },t=>[uniqueIndex('creator_email').on(t.email),uniqueIndex('creator_user').on(t.userId)]);
 export const links=sqliteTable('links',{
  id:text('id').primaryKey(),slug:text('slug').notNull(),title:text('title').notNull(),brand:text('brand').notNull(),creatorId:text('creator_id').notNull().references(()=>creators.id),destination:text('destination').notNull(),active:integer('active').notNull().default(1),expiresAt:text('expires_at'),createdAt:text('created_at').notNull()
