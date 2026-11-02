@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {issueAdminSession,validAdminSession,passwordMatches,adminCookie,ADMIN_SESSION_SECONDS} from '../lib/admin-session.ts';
+const password='test-only-strong-password',secret='test-only-server-secret',now=Date.now();
+const token=await issueAdminSession('admin-a',password,secret,now);
+assert(await validAdminSession(token,'admin-a',password,secret,now));
+assert(!await validAdminSession(token,'admin-b',password,secret,now));
+assert(!await validAdminSession(token,'admin-a','changed-password',secret,now));
+assert(!await validAdminSession(token,'admin-a',password,'rotated-secret',now));
+assert(!await validAdminSession(token,'admin-a',password,secret,now+(ADMIN_SESSION_SECONDS+1)*1000));
+assert(!await validAdminSession(token+'.tampered','admin-a',password,secret,now));
+assert(!await validAdminSession('malformed','admin-a',password,secret,now));
+assert(await passwordMatches(password,password));assert(!await passwordMatches('wrong',password));
+const secure=adminCookie(token,'https://example.com');assert(secure.includes('; Secure'));assert(secure.includes('HttpOnly'));assert(secure.includes('SameSite=Strict'));assert(!adminCookie(token,'http://127.0.0.1').includes('; Secure'));
+assert(adminCookie('','https://example.com',0).includes('Max-Age=0'));
+console.log('PASS: signed user-bound sessions, expiry, tampering, password/secret rotation, password comparison and cookie security.');

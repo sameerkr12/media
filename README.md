@@ -1,32 +1,54 @@
 # EmpireX Media
 
-A minimal black-and-gold agency website with an interactive 3D hero and a creator link-in-bio platform.
+Agency website with an interactive 3D hero and a creator link-in-bio platform.
 
 ## Features
 
-- Agency homepage with brand and creator roster
-- `/admin`: creator pages, link management, access assignment, click analytics, and CSV export
-- `/creator`: creator workspace restricted to the assigned creator
-- `/c/[handle]`: one link-in-bio page per creator
+- `/admin`: creator pages, titled links, portal assignments, themes, scoped analytics and CSV export
+- `/creator`: workspace restricted to the assigned creator
+- `/c/[handle]`: themed public creator page
 - `/r/[slug]`: tracked redirects with pause and expiry support
-- Cloudflare D1 persistence and Sites-managed sign-in
+- Supabase Postgres persistence and Sites-managed ChatGPT sign-in
+- Google Analytics 4 site tag
 
 ## Development
 
 Requires Node.js 22.13 or newer.
 
+1. Run `supabase/migrations/202611020001_empirex.sql` in your Supabase SQL Editor. It creates the tables, private permissions and analytics function.
+2. Create an ignored `.dev.vars` file:
+
+```dotenv
+ADMIN_EMAIL=seedy@sites.test
+ADMIN_PASSWORD=choose-a-strong-password-at-least-12-characters
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-server-service-role-key
+# Or use SUPABASE_SECRET_KEY=sb_secret_... instead.
+```
+
 ```sh
 npm ci
-npm run db:generate # only after changing the schema
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_melted_iron_lad.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_mixed_beast.sql
+npm run db:check
 npm run dev
 ```
 
-Apply the migration once to a new local database. Create an ignored `.dev.vars` file containing `ADMIN_EMAIL=seedy@sites.test` for local development. The starter simulates sign-in as that local test account. Production uses Sites-provided authenticated identity headers; configure `ADMIN_EMAIL` as a hosted environment variable for the initial administrator.
+Supabase stores admins, creators, themes, links and click analytics. There is no D1 fallback. Only the server accesses Supabase; anon/publishable keys are not used with the existing ChatGPT identity. Never prefix the server secret with NEXT_PUBLIC_. RLS is enabled and private tables/functions are inaccessible to anon and authenticated Supabase clients.
 
-Opening the admin dashboard initializes the five supplied creators and their Instagram links. Assign creator sign-in emails in **Creator pages → Portal access**. Site visitor access and application roles are separate; the hosted site is currently private.
+Local sign-in is simulated as seedy@sites.test. Production uses Sites-provided authenticated identity headers. Configure SUPABASE_URL, SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY), and the real ADMIN_EMAIL in the hosted server environment before deploying. Local `.dev.vars` does not configure hosted secrets. Trust identity headers only behind the platform authentication proxy.
+
+Opening the admin dashboard initializes five supplied creators and their Instagram links using conflict-ignore inserts. Assign creator sign-in emails in **Creator pages → Portal access**. Site access and creator roles are separate.
+
+## Schema and existing data
+
+The SQL under `supabase/migrations/` is the authoritative schema, including RLS/grants and the analytics function. `db/schema.ts` describes PostgreSQL tables. Review future generated DDL in `supabase/generated/` before applying it: generated table-only DDL does not include custom functions or permission rules. The old `drizzle/` migrations remain historical D1 records and are no longer applied to the application database.
+
+An exported D1 JSON backup containing admins, creators, links and clicks arrays can be imported with:
+
+```sh
+npm run db:import -- path/to/backup.json
+```
+
+Import runs in dependency order and ignores existing primary keys. IDs, handles, short codes, timestamps and click hashes are preserved. Keep backups outside Git; the current local backup is at the ignored `.sites-runtime/d1-backup.json`.
 
 ## Validation
 
@@ -34,16 +56,25 @@ Opening the admin dashboard initializes the five supplied creators and their Ins
 npx tsc --noEmit
 npm run build
 npm start -- --port 8787
-# In another terminal, with Python requests installed:
-python3 tests/tracker-integration.py
+# In another terminal:
+npm run test:db
+npm run test:admin
 ```
 
-The integration test runs only against loopback, uses a separate local D1 database, and checks redirects, uniqueness, bot exclusions, paused links, input validation, CSRF, and creator authorization. Local tests and data are not deployed.
+The Supabase suite only targets a loopback application server. It writes disposable QA records in the configured Supabase project and cleans up its records afterward. Existing creator assignments are not changed. Prefer a separate test project for CI. Tests cover titles, themes, redirects, repeat visitors, bot/prefetch/HEAD exclusions, pause, creator-scoped reads/writes, access revocation and anonymous rejection. The Python test entry point forwards to this suite.
 
-Runtime secrets, databases, generated builds, and local environment files are excluded from version control.
+Runtime secrets, database backups, generated builds and local environment files are ignored by Git.
 
-## Creator appearance and analytics
+## Appearance and analytics
 
-Use **Creator pages → Theme & design** (or the profile strip in the creator portal) to choose one of six palettes, three button styles, and three fonts. The preview updates before saving; appearance is stored independently for each creator. Existing pages default to Empire Gold. Apply `0001_mixed_beast.sql` once after the original migration, then restart the dev server.
+Use **Creator pages → Theme & design**, or the profile strip in the creator portal, to choose from six palettes, three button styles and three fonts. The live preview updates before saving; appearance is independent per creator.
 
-Use **Analytics** on a creator card or the **Creator analytics** selector to scope the chart, link metrics, referring sites, devices, countries and CSV to one creator. Assigned creator accounts only receive their own data, regardless of query parameters. Click totals include repeat clicks; unique visitors are measured per link using a browser cookie, and are not a deduplicated audience across links. Last-click times use the viewer's local timezone, while chart days use UTC. Common bots, HEAD requests and prefetches are excluded. Country is supplied by Cloudflare and may be Unknown locally. Cookie blocking or deletion affects unique counts.
+Use **Analytics** on a creator card or the analytics selector to scope charts, link metrics, sources, devices, countries and CSV to one creator. Assigned accounts only receive their own data regardless of query parameters. Click totals include repeats; unique visitors are measured per link using a browser cookie, rather than a deduplicated audience across links. Last-click times use the viewer's timezone; chart days use UTC. Country is supplied by Cloudflare and may be Unknown locally. Cookie blocking or deletion affects unique counts.
+
+## Admin password
+
+Run `supabase/migrations/202611020002_admin_login.sql` in the Supabase SQL Editor, and set ADMIN_PASSWORD to 12�256 characters in the server environment. Admin access fails closed if the password or login-attempt schema is missing. Keep the password in ignored `.dev.vars` for local use and in hosted server secrets for deployment; do not commit it. Restart the dev server after editing local secrets.
+
+Admin users must first sign in through ChatGPT, then unlock at `/admin`. Both the admin page and tracker API enforce the password session, including the admin creator-preview route. Signed sessions are bound to the signed-in user, expire after 8 hours, and use HttpOnly, SameSite=Strict cookies (Secure over HTTPS). The existing Supabase server secret also signs the session; changing that secret or ADMIN_PASSWORD invalidates prior sessions. Lock admin clears the current browser cookie; sign-out also clears it. Ordinary assigned creators continue to use their own portal without the admin password.
+
+Password attempts are limited persistently in Supabase to five per admin account per 15-minute window. Successful login resets the attempt count. Production still requires trusted authenticated-identity headers from the hosting platform.
