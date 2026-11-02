@@ -1,3 +1,4 @@
+import {AUTH_COOKIE,usingSupabaseAuth,authUser} from '../lib/supabase-auth';
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -20,6 +21,10 @@ const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
+  if(usingSupabaseAuth()){
+   const token=requestHeaders.get('cookie')?.split(';').map(s=>s.trim()).find(s=>s.startsWith(AUTH_COOKIE+'='))?.slice(AUTH_COOKIE.length+1);
+   return token?authUser(token):null;
+  }
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!userId || !email) return null;
@@ -50,7 +55,7 @@ export async function requireChatGPTUser(
 
 export function chatGPTSignInPath(returnTo: string): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
-  return `${SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+  return `${usingSupabaseAuth()?'/login':SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function chatGPTSignOutPath(returnTo = "/"): string {

@@ -78,3 +78,7 @@ Run `supabase/migrations/202611020002_admin_login.sql` in the Supabase SQL Edito
 Admin users must first sign in through ChatGPT, then unlock at `/admin`. Both the admin page and tracker API enforce the password session, including the admin creator-preview route. Signed sessions are bound to the signed-in user, expire after 8 hours, and use HttpOnly, SameSite=Strict cookies (Secure over HTTPS). The existing Supabase server secret also signs the session; changing that secret or ADMIN_PASSWORD invalidates prior sessions. Lock admin clears the current browser cookie; sign-out also clears it. Ordinary assigned creators continue to use their own portal without the admin password.
 
 Password attempts are limited persistently in Supabase to five per admin account per 15-minute window. Successful login resets the attempt count. Production still requires trusted authenticated-identity headers from the hosting platform.
+
+## VPS deployment
+
+See [deploy/README.md](deploy/README.md) for Linux VPS setup with Docker Compose, automatic HTTPS, runtime secrets, Supabase Auth and operational commands. Build the native production server with `npm run build:vps`; deploy with `sh deploy/deploy.sh` after configuring `.env.vps`. The native VPS runtime validates Supabase Auth sessions and ignores platform identity headers. The original `npm run dev` remains the local Worker preview.

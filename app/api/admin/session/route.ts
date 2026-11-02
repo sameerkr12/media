@@ -1,3 +1,4 @@
+import {publicOrigin} from '../../../../lib/supabase-auth';
 import {eligibleIdentity,requireAdmin,checkOrigin,database,HttpError,json} from '../../../../lib/tracker';
 import {adminSettings} from '../../../../lib/admin-auth';
 import {issueAdminSession,passwordMatches,adminCookie} from '../../../../lib/admin-session';
@@ -20,8 +21,8 @@ export async function POST(request:Request){try{
  if(typeof body.password!=='string'||body.password.length>256||!await passwordMatches(body.password,settings.password))throw new HttpError(401,'Incorrect admin password.');
  await db.update('admin_login_attempts',{attempts:0,window_start:new Date().toISOString()},{bucket:eq(bucket)});
  const token=await issueAdminSession(user.userId,settings.password,settings.secret);
- const response=json({ok:true});response.headers.set('Set-Cookie',adminCookie(token,request.url));return response;
+ const response=json({ok:true});response.headers.set('Set-Cookie',adminCookie(token,publicOrigin(request)));return response;
  }catch(error){return failure(error);}}
 export async function DELETE(request:Request){try{
- checkOrigin(request);const response=json({ok:true});response.headers.set('Set-Cookie',adminCookie('',request.url,0));return response;
+ checkOrigin(request);const response=json({ok:true});response.headers.set('Set-Cookie',adminCookie('',publicOrigin(request),0));return response;
  }catch(error){return failure(error);}}

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {validateVpsEnvironment} from '../scripts/validate-vps-env.mjs';
+const valid={AUTH_MODE:'supabase',APP_URL:'https://media.empire.test',ADMIN_EMAIL:'owner@empire.test',ADMIN_PASSWORD:'test-password-long-enough',SUPABASE_URL:'https://project.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_test',SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
+assert.deepEqual(validateVpsEnvironment(valid),[]);
+assert(validateVpsEnvironment({...valid,AUTH_MODE:'platform'}).length);
+assert(validateVpsEnvironment({...valid,SITE_DOMAIN:'another.empire.test'}).length);
+assert(validateVpsEnvironment({...valid,APP_URL:'http://media.empire.test'}).length);
+assert(validateVpsEnvironment({...valid,ADMIN_PASSWORD:'short'}).length);
+assert(validateVpsEnvironment({...valid,SUPABASE_SECRET_KEY:'anon-key'}).length);
+assert(validateVpsEnvironment({}).length);
+console.log('PASS: VPS preflight accepts valid configuration and rejects insecure/missing settings.');

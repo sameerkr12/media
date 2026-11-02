@@ -1,5 +1,6 @@
+import {publicOrigin} from './supabase-auth';
 import {adminSettings,adminUnlocked} from './admin-auth';
-import {env} from 'cloudflare:workers';
+import {env} from '#runtime-env';
 import {createSupabaseDatabase,eq,type Creator} from './supabase-rest';
 import {getChatGPTUser} from '../app/chatgpt-auth';
 export function database(){const settings=env as unknown as Record<string,string>;const url=settings.SUPABASE_URL;const key=settings.SUPABASE_SECRET_KEY||settings.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new HttpError(503,'Supabase database is not configured.');return createSupabaseDatabase(url,key);}
@@ -11,7 +12,7 @@ export async function identity(){
  return user;
 }
 export function requireAdmin(user:{admin:boolean}){if(!user.admin)throw new HttpError(403,'Admin access is required.');}
-export function checkOrigin(request:Request){const origin=request.headers.get('origin');if(!origin||origin!==new URL(request.url).origin)throw new HttpError(403,'This request must come from your EmpireX dashboard.');}
+export function checkOrigin(request:Request){const origin=request.headers.get('origin');if(!origin||origin!==publicOrigin(request))throw new HttpError(403,'This request must come from your EmpireX dashboard.');}
 export function clean(value:unknown,max:number,required=true){if(typeof value!=='string'||value.trim().length>max||(required&&!value.trim()))throw new HttpError(400,'Please check the required fields and their length.');return value.trim();}
 export function destination(value:unknown,origin:string){const text=clean(value,2048);let u:URL;try{u=new URL(text);}catch{throw new HttpError(400,'Enter a valid HTTPS destination URL.');}if(u.protocol!=='https:'||u.username||u.password)throw new HttpError(400,'Use an HTTPS URL without embedded credentials.');if(u.origin===origin)throw new HttpError(400,'Choose a brand destination outside this site.');return u.href;}
 export function expiry(value:unknown){if(!value)return null;const s=clean(value,40);const d=new Date(s);if(!Number.isFinite(d.getTime())||d.getTime()<=Date.now())throw new HttpError(400,'Expiry must be a date in the future.');return d.toISOString();}

@@ -1,3 +1,4 @@
+import {publicOrigin} from '../../../lib/supabase-auth';
 import {eq,SupabaseError,type Link} from '../../../lib/supabase-rest';
 import {themes,layouts,fonts} from '../../../lib/appearance';
 import {identity,database,requireAdmin,checkOrigin,clean,destination,expiry,emailAddress,bootstrap,creatorFor,json,HttpError} from '../../../lib/tracker';
@@ -27,11 +28,11 @@ export async function POST(request:Request){try{
  if(b.action==='create'){
   const creatorId=clean(b.creatorId,60);if(!user.admin&&creatorId!==own?.id)throw new HttpError(403,'You can only add links to your own page.');if(!await db.one('creators',{id:eq(creatorId),select:'id'}))throw new HttpError(400,'Choose a creator from your roster.');
   const slug=b.slug?clean(b.slug,48).toLowerCase():crypto.randomUUID().replaceAll('-','').slice(0,9);if(!/^[a-z0-9][a-z0-9-]{2,47}$/.test(slug))throw new HttpError(400,'Use 3–48 lowercase letters, numbers or hyphens for the short code.');
-  await db.insert('links',{id:crypto.randomUUID(),slug,title:clean(b.title,120),brand:clean(b.brand||'Website',80),creator_id:creatorId,destination:destination(b.destination,new URL(request.url).origin),active:1,expires_at:expiry(b.expiresAt),created_at:new Date().toISOString()});return json({ok:true});
+  await db.insert('links',{id:crypto.randomUUID(),slug,title:clean(b.title,120),brand:clean(b.brand||'Website',80),creator_id:creatorId,destination:destination(b.destination,publicOrigin(request)),active:1,expires_at:expiry(b.expiresAt),created_at:new Date().toISOString()});return json({ok:true});
  }
  if(b.action==='update'){
   const id=clean(b.id,60);const old=await db.one<Link>('links',{id:eq(id)});if(!old)throw new HttpError(404,'Link not found.');if(!user.admin&&old.creator_id!==own?.id)throw new HttpError(403,'You can only edit your own links.');if(typeof b.active!=='boolean')throw new HttpError(400,'Choose an active status.');
-  await db.update('links',{active:b.active?1:0,destination:b.destination===undefined?old.destination:destination(b.destination,new URL(request.url).origin),expires_at:b.expiresAt===undefined?old.expires_at:expiry(b.expiresAt),title:b.title===undefined?old.title:clean(b.title,120),brand:b.brand===undefined?old.brand:clean(b.brand||'Website',80)},{id:eq(id)});return json({ok:true});
+  await db.update('links',{active:b.active?1:0,destination:b.destination===undefined?old.destination:destination(b.destination,publicOrigin(request)),expires_at:b.expiresAt===undefined?old.expires_at:expiry(b.expiresAt),title:b.title===undefined?old.title:clean(b.title,120),brand:b.brand===undefined?old.brand:clean(b.brand||'Website',80)},{id:eq(id)});return json({ok:true});
  }
  throw new HttpError(400,'Unknown action.');
 }catch(e){return failure(e);}}
