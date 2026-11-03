@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+let source=readFileSync('app/r/[slug]/route.ts','utf8').replace(/^import .*;\r?\n/gm,'');
+source=`const after=task=>globalThis.jobs.push(task);const publicOrigin=()=> 'https://empirexmedia.com';const eq=x=>x;const database=()=>globalThis.testDb;\n`+source;
+const code=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
+const route=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+globalThis.jobs=[];const rows=[];globalThis.testDb={one:async()=>({id:'test',destination:'https://example.com',active:1}),insert:async(_,row)=>rows.push(row)};
+const request=ua=>new Request('https://empirexmedia.com/r/test',{headers:{'user-agent':ua}});
+const response=await route.GET(request('Mozilla Android Tablet'),{params:Promise.resolve({slug:'test'})});assert.equal(response.status,302);assert.equal(rows.length,0);assert.equal(jobs.length,1);await jobs.pop()();assert.equal(rows[0].device,'Tablet');assert.equal(rows[0].country,'Unknown');assert.equal(rows[0].visitor.length,64);
+await route.GET(request('facebookexternalhit'),{params:Promise.resolve({slug:'test'})});assert.equal(jobs.length,0);
+await route.HEAD(request('Mozilla'),{params:Promise.resolve({slug:'test'})});assert.equal(jobs.length,0);
+console.log('PASS: redirect precedes tracking write; tablet classification, hashed visitor, bot and HEAD exclusion.');
