@@ -87,6 +87,12 @@ See [deploy/README.md](deploy/README.md) for Linux VPS setup with Docker Compose
 
 The black-and-gold control center includes Overview, Links, Creators and Analytics. Link management supports title/URL search, creator and status filters, newest/most-clicked/title/expiry sorting, pagination, duplicate-link drafts, filtered CSV export, and selection of up to 100 links for bulk pause/resume or copying URLs. Resuming preserves link expiry settings. Bulk changes are authorized server-side for every selected link; creator accounts cannot edit another creator's links.
 
-Creator cards offer Add link, Manage links, Design, Analytics, profile editing and portal assignment controls, plus creator search. The overview includes a creator leaderboard and shortcuts to paused/expired links and portal assignments. Data refreshes every minute. This update uses the existing database schema and needs no SQL migration.
+Creator cards offer Add link, Manage links, Design, Analytics, profile editing and portal assignment controls, plus creator search. The overview includes a creator leaderboard and shortcuts to paused/expired links and portal assignments. Data refreshes every minute. The dashboard uses the shared Supabase database.
 
 Run `node tests/dashboard-utils.test.mjs` for filtering/sorting, and `npm run test:db` for Supabase CRUD, bulk authorization and tracking checks.
+
+## Creator page studio
+
+Open Design on a creator card, or visit `/creator/design` from a creator account. The studio includes inline link titles and URLs, up to five tags per link, drag ordering, keyboard sorting and move up/down buttons. Edit the profile, theme, button style and font alongside a live phone preview. Undo/redo works before saving; Save changes publishes the draft atomically. Hiding a saved link preserves its URL and tracking history. The preview does not record clicks. Concurrent changes produce a reload prompt instead of overwriting another edit.
+
+Apply `supabase/migrations/202611030001_page_builder.sql`, then `supabase/migrations/202611030002_page_builder_conflicts.sql`, in Supabase SQL Editor before deploying this version. Creator accounts can edit only their assigned page; unlocked admins can select any creator. Run `npm run test:builder` for model checks, and `node tests/page-builder-integration.mjs` against the local built Worker for database/API checks using disposable records.

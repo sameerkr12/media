@@ -1,9 +1,10 @@
+import type {BuilderData,BuilderLink} from './page-builder-model';
 // Server-only REST adapter. Credentials never enter the browser bundle.
 export class SupabaseError extends Error {
  constructor(public code:string,public status:number){super(`Supabase request failed (${code})`);}
 }
 export type Creator={id:string;name:string;handle:string;email:string|null;user_id:string|null;bio:string;theme:string;layout:string;font:string;created_at:string};
-export type Link={id:string;slug:string;title:string;brand:string;creator_id:string;destination:string;active:number;expires_at:string|null;created_at:string};
+export type Link={id:string;slug:string;title:string;brand:string;creator_id:string;destination:string;active:number;expires_at:string|null;created_at:string;tags?:string[];sort_order?:number};
 type Table='creators'|'links'|'admins'|'clicks'|'admin_login_attempts';
 // Individual eq filters are literal values; URLSearchParams encodes them.
 export const eq=(value:string)=>'eq.'+value;
@@ -28,6 +29,8 @@ export function createSupabaseDatabase(url:string,key:string){
   async one<T>(table:Table,query:Record<string,string>){return (await request<T[]>(table,'GET',undefined,{...query,limit:'1'}))[0]??null;},
   async insert(table:Table,rows:unknown,ignoreDuplicates=false){await request(table,'POST',rows,ignoreDuplicates?{on_conflict:table==='admins'?'user_id':'id'}:{},'return=minimal'+(ignoreDuplicates?',resolution=ignore-duplicates':''));},
   async update<T>(table:Table,values:unknown,query:Record<string,string>){return request<T[]>(table,'PATCH',values,query,'return=representation');},
+  async builder(creatorId:string){return request<BuilderData|null>('rpc/empirex_page_builder','POST',{p_creator_id:creatorId});},
+  async savePage(creatorId:string,version:number,profile:unknown,links:BuilderLink[]){return request<BuilderData>('rpc/empirex_save_page','POST',{p_creator_id:creatorId,p_expected_version:version,p_profile:profile,p_links:links});},
   async loginAttempt(bucket:string){return request<boolean>('rpc/empirex_admin_login_attempt','POST',{p_bucket:bucket});},
   async dashboard(scope:string|null,admin:boolean){return request<{creators:Creator[];links:Link[];daily:unknown[];breakdown:unknown[]}>('rpc/empirex_dashboard','POST',{p_scope:scope,p_admin:admin});},
  };

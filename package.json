@@ -19,10 +19,14 @@
     "build:vps": "node scripts/build-vps.mjs",
     "start:vps": "node --env-file=.env.vps scripts/start-vps.mjs",
     "test:vps": "node tests/vps-config.test.mjs && node tests/vps-integration.mjs",
-    "test:dashboard": "node tests/dashboard-utils.test.mjs"
+    "test:dashboard": "node tests/dashboard-utils.test.mjs",
+    "test:builder": "node tests/page-builder-model.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.7.1",
     "@shadcn/react": "^0.3.0",
     "class-variance-authority": "0.7.1",

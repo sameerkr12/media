@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {draftHistory,reorderLinks,visibleBuilderLinks,normalizeTags,pageFingerprint} from '../lib/page-builder-model.ts';
+const profile={id:'creator',name:'Test',handle:'test',bio:'',theme:'empire',layout:'rounded',font:'modern',edit_version:1};
+const base={slug:'',title:'Link',brand:'Website',destination:'https://example.com',expires_at:null,tags:[],sort_order:0};
+const links=[{...base,id:'a',active:1},{...base,id:'b',active:0},{...base,id:'c',active:1,expires_at:'2020-01-01T00:00:00Z'}];
+const moved=reorderLinks(links,0,2);assert.deepEqual(moved.map(l=>l.id),['b','c','a']);assert.deepEqual(links.map(l=>l.id),['a','b','c']);assert.equal(reorderLinks(links,-1,0),links);
+assert.deepEqual(visibleBuilderLinks(links,Date.parse('2026-11-03')).map(l=>l.id),['a']);
+assert.deepEqual(normalizeTags(['  New ','new','Video','',' Recommended ']),['New','Video','Recommended']);
+const original={profile,links},changed={profile,links:moved};
+let state={present:original,past:[],future:[]};state=draftHistory(state,{type:'change',draft:changed});assert.equal(state.present,changed);assert.equal(state.past[0],original);
+state=draftHistory(state,{type:'undo'});assert.equal(state.present,original);state=draftHistory(state,{type:'redo'});assert.equal(state.present,changed);
+assert.notEqual(pageFingerprint(original),pageFingerprint(changed));
+state=draftHistory(state,{type:'reset',draft:original});assert.equal(state.past.length,0);assert.equal(state.future.length,0);
+console.log('PASS: stable reorder, hidden/expired preview filtering, tag normalization, undo/redo, dirty detection and save reset.');

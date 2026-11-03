@@ -7,7 +7,7 @@ This deployment uses the native Next.js standalone Node server, Supabase Postgre
 - A Linux VPS with Docker Engine and the Compose plugin installed. See https://docs.docker.com/engine/install/ubuntu/ for the official Ubuntu setup.
 - A domain whose A record points at the VPS IP. Set an AAAA record only if IPv6 is working on the server.
 - Ports 80/tcp and 443/tcp open for HTTP and HTTPS. 443/udp is optional for HTTP/3. Keep the app's port 3000 private. Allow SSH before changing firewall rules.
-- Supabase SQL migrations `202611020001_empirex.sql` and `202611020002_admin_login.sql` applied in the project's SQL Editor. Existing Supabase data stays in place.
+- Supabase SQL migrations `202611020001_empirex.sql`, `202611020002_admin_login.sql`, `202611030001_page_builder.sql` and `202611030002_page_builder_conflicts.sql` (in order) applied in the project's SQL Editor. Existing Supabase data stays in place.
 
 ## Configure Supabase sign-in
 
