@@ -18,6 +18,7 @@ const managedLinux = readExecutionProfile() === "managed-linux";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
+  vars: { AUTH_MODE: "platform" },
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [

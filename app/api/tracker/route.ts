@@ -30,6 +30,15 @@ export async function POST(request:Request){try{
   const slug=b.slug?clean(b.slug,48).toLowerCase():crypto.randomUUID().replaceAll('-','').slice(0,9);if(!/^[a-z0-9][a-z0-9-]{2,47}$/.test(slug))throw new HttpError(400,'Use 3–48 lowercase letters, numbers or hyphens for the short code.');
   await db.insert('links',{id:crypto.randomUUID(),slug,title:clean(b.title,120),brand:clean(b.brand||'Website',80),creator_id:creatorId,destination:destination(b.destination,publicOrigin(request)),active:1,expires_at:expiry(b.expiresAt),created_at:new Date().toISOString()});return json({ok:true});
  }
+ if(b.action==='bulkStatus'){
+  if(!Array.isArray(b.ids)||!b.ids.length||b.ids.length>100||b.ids.some(id=>typeof id!=='string'||!/^[A-Za-z0-9_-]{1,60}$/.test(id))||typeof b.active!=='boolean')throw new HttpError(400,'Select 1–100 valid links and an active status.');
+  const ids=[...new Set(b.ids as string[])],idFilter='in.('+ids.join(',')+')';
+  const rows=await db.list<Link>('links',{id:idFilter,select:'id,creator_id'});
+  if(rows.length!==ids.length)throw new HttpError(404,'One or more selected links no longer exist.');
+  if(!user.admin&&rows.some(link=>link.creator_id!==own?.id))throw new HttpError(403,'You can only edit your own links.');
+  const updated=await db.update('links',{active:b.active?1:0},{id:idFilter,...(!user.admin?{creator_id:eq(own!.id)}:{})});
+  return json({ok:true,updated:updated.length});
+ }
  if(b.action==='update'){
   const id=clean(b.id,60);const old=await db.one<Link>('links',{id:eq(id)});if(!old)throw new HttpError(404,'Link not found.');if(!user.admin&&old.creator_id!==own?.id)throw new HttpError(403,'You can only edit your own links.');if(typeof b.active!=='boolean')throw new HttpError(400,'Choose an active status.');
   await db.update('links',{active:b.active?1:0,destination:b.destination===undefined?old.destination:destination(b.destination,publicOrigin(request)),expires_at:b.expiresAt===undefined?old.expires_at:expiry(b.expiresAt),title:b.title===undefined?old.title:clean(b.title,120),brand:b.brand===undefined?old.brand:clean(b.brand||'Website',80)},{id:eq(id)});return json({ok:true});

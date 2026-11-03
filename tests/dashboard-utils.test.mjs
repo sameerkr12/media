@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {csvText,filterLinks,linkStatus} from '../lib/dashboard-utils.ts';
+const now=Date.parse('2026-11-03T00:00:00Z');
+const base={brand:'Website',creator_name:'Creator',creator_handle:'creator',destination:'https://example.com',visitors:0,last_click:null};
+const links=[{...base,id:'a',creator_id:'one',slug:'one',title:'Zebra',active:1,expires_at:null,created_at:'2026-11-01',clicks:1},{...base,id:'b',creator_id:'two',slug:'two',title:'Alpha',active:0,expires_at:null,created_at:'2026-11-02',clicks:8},{...base,id:'c',creator_id:'one',slug:'three',title:'Beta',active:1,expires_at:'2026-11-02',created_at:'2026-10-30',clicks:3}];
+const options={query:'',creator:'all',state:'all',sort:'recent'};
+assert.equal(linkStatus(links[0],now),'Live');assert.equal(linkStatus(links[1],now),'Paused');assert.equal(linkStatus(links[2],now),'Expired');
+assert.deepEqual(filterLinks(links,{...options,sort:'clicks'},now).map(l=>l.id),['b','c','a']);
+assert.deepEqual(filterLinks(links,{...options,sort:'title'},now).map(l=>l.id),['b','c','a']);
+assert.deepEqual(filterLinks(links,{...options,sort:'expiry'},now).map(l=>l.id),['c','b','a']);
+assert.deepEqual(filterLinks(links,{...options,creator:'one',state:'Live'},now).map(l=>l.id),['a']);
+assert.equal(filterLinks(links,{...options,query:'EXAMPLE.COM'},now).length,3);
+assert.equal(filterLinks(links,{...options,query:'  alpha  '},now)[0].id,'b');
+assert.deepEqual(links.map(l=>l.id),['a','b','c'],'Filtering/sorting must not mutate the original data');
+console.log('PASS: link states, URL/title search, creator filters, sort modes and immutable data.');
+
+const csv=csvText([['Title','URL'],['=SUM(1,2)','https://example.com'],['quote"test','safe']]);
+assert.equal(csv.charCodeAt(0),0xfeff);
+assert(csv.includes(String.fromCharCode(13,10)),'CSV must use real line breaks');
+assert(csv.includes(String.fromCharCode(34,39)+'=SUM'),'Spreadsheet formulas must be neutralized');
+assert(csv.includes('quote'+String.fromCharCode(34,34)+'test'),'Embedded quotes must be escaped');
+console.log('PASS: CSV encoding, line breaks, quotes and formula protection.');

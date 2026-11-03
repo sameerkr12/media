@@ -1,5 +1,5 @@
 export const themes = [
- {id:'empire',name:'Empire Gold',description:'Signature gold & forest',colors:['#0b0e09','#d5bc92']},
+ {id:'empire',name:'Empire Gold',description:'Signature black & gold',colors:['#090909','#dfc393']},
  {id:'midnight',name:'Midnight',description:'Electric blue after dark',colors:['#080f25','#80bfff']},
  {id:'pearl',name:'Pearl',description:'Warm, clean & editorial',colors:['#f6f2eb','#69513c']},
  {id:'sunset',name:'Sunset',description:'Rich plum & soft coral',colors:['#28122d','#ffb598']},

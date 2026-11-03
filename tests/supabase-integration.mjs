@@ -47,10 +47,18 @@ try{
  assert.equal(link.clicks,2);assert.equal(link.visitors,1);assert(link.last_click);assert(scoped.links.every(l=>l.creator_id===creatorId));
  assert.equal(scoped.daily.reduce((n,d)=>n+d.clicks,0),2);assert.equal(scoped.breakdown.reduce((n,d)=>n+d.clicks,0),2);
  assert((await state(own,'?creator='+otherCreatorId)).links.every(l=>l.creator_id===creatorId));
+ await post({action:'bulkStatus',ids:[],active:false},400,own);
+ await post({action:'bulkStatus',ids:[linkId,otherLinkId],active:false},403,own);
+ assert.equal((await state()).links.find(l=>l.id===otherLinkId).active,1,'Denied bulk request must not update other creators');
+ await post({action:'bulkStatus',ids:[linkId],active:false},200,own);
+ assert.equal((await state(own)).links.find(l=>l.id===linkId).active,0);
+ await post({action:'bulkStatus',ids:[linkId],active:true},200,own);
+ await post({action:'bulkStatus',ids:[linkId,otherLinkId],active:false});
+ await post({action:'bulkStatus',ids:[linkId,otherLinkId],active:true});
  await post({action:'update',id:otherLinkId,active:false},403,own);
  await post({action:'update',id:linkId,active:false},200,own);assert.equal((await call('/r/'+slug,{redirect:'manual'})).status,410);
  await post({action:'creatorEmail',id:creatorId,email:''});assert((await state(own)).notAssigned);
- console.log('PASS: Supabase CRUD, titles, themes, redirects, click counts, unique visitors, bot/HEAD/prefetch exclusions, scoped analytics, creator authorization and access revocation.');
+ console.log('PASS: bulk pause/resume and mixed-creator authorization, Supabase CRUD, titles, themes, redirects, click counts, unique visitors, bot/HEAD/prefetch exclusions, scoped analytics, creator authorization and access revocation.');
 }finally{
  for(const id of [linkId,otherLinkId].filter(Boolean)){await remove('clicks',{link_id:'eq.'+id});await remove('links',{id:'eq.'+id});}
  for(const id of [creatorId,otherCreatorId].filter(Boolean))await remove('creators',{id:'eq.'+id});

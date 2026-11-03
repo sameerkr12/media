@@ -73,7 +73,7 @@ Use **Analytics** on a creator card or the analytics selector to scope charts, l
 
 ## Admin password
 
-Run `supabase/migrations/202611020002_admin_login.sql` in the Supabase SQL Editor, and set ADMIN_PASSWORD to 12–256 characters in the server environment. Admin access fails closed if the password or login-attempt schema is missing. Keep the password in ignored `.dev.vars` for local use and in hosted server secrets for deployment; do not commit it. Restart the dev server after editing local secrets.
+Run `supabase/migrations/202611020002_admin_login.sql` in the Supabase SQL Editor, and set ADMIN_PASSWORD to 12â€“256 characters in the server environment. Admin access fails closed if the password or login-attempt schema is missing. Keep the password in ignored `.dev.vars` for local use and in hosted server secrets for deployment; do not commit it. Restart the dev server after editing local secrets.
 
 Admin users must first sign in through ChatGPT, then unlock at `/admin`. Both the admin page and tracker API enforce the password session, including the admin creator-preview route. Signed sessions are bound to the signed-in user, expire after 8 hours, and use HttpOnly, SameSite=Strict cookies (Secure over HTTPS). The existing Supabase server secret also signs the session; changing that secret or ADMIN_PASSWORD invalidates prior sessions. Lock admin clears the current browser cookie; sign-out also clears it. Ordinary assigned creators continue to use their own portal without the admin password.
 
@@ -82,3 +82,11 @@ Password attempts are limited persistently in Supabase to five per admin account
 ## VPS deployment
 
 See [deploy/README.md](deploy/README.md) for Linux VPS setup with Docker Compose, automatic HTTPS, runtime secrets, Supabase Auth and operational commands. Build the native production server with `npm run build:vps`; deploy with `sh deploy/deploy.sh` after configuring `.env.vps`. The native VPS runtime validates Supabase Auth sessions and ignores platform identity headers. The original `npm run dev` remains the local Worker preview.
+
+## Admin workspace
+
+The black-and-gold control center includes Overview, Links, Creators and Analytics. Link management supports title/URL search, creator and status filters, newest/most-clicked/title/expiry sorting, pagination, duplicate-link drafts, filtered CSV export, and selection of up to 100 links for bulk pause/resume or copying URLs. Resuming preserves link expiry settings. Bulk changes are authorized server-side for every selected link; creator accounts cannot edit another creator's links.
+
+Creator cards offer Add link, Manage links, Design, Analytics, profile editing and portal assignment controls, plus creator search. The overview includes a creator leaderboard and shortcuts to paused/expired links and portal assignments. Data refreshes every minute. This update uses the existing database schema and needs no SQL migration.
+
+Run `node tests/dashboard-utils.test.mjs` for filtering/sorting, and `npm run test:db` for Supabase CRUD, bulk authorization and tracking checks.

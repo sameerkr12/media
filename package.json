@@ -18,7 +18,8 @@
     "test:admin": "node tests/admin-session.test.mjs && node tests/admin-auth-integration.mjs",
     "build:vps": "node scripts/build-vps.mjs",
     "start:vps": "node --env-file=.env.vps scripts/start-vps.mjs",
-    "test:vps": "node tests/vps-config.test.mjs && node tests/vps-integration.mjs"
+    "test:vps": "node tests/vps-config.test.mjs && node tests/vps-integration.mjs",
+    "test:dashboard": "node tests/dashboard-utils.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
