@@ -1,5 +1,5 @@
-export type BuilderProfile={id:string;name:string;handle:string;bio:string;theme:string;layout:string;font:string;edit_version:number};
-export type BuilderLink={id:string;slug:string;title:string;brand:string;destination:string;active:number;expires_at:string|null;tags:string[];sort_order:number;created_at?:string};
+export type BuilderProfile={id:string;name:string;handle:string;bio:string;theme:string;layout:string;font:string;background?:string;edit_version:number};
+export type BuilderLink={id:string;slug:string;title:string;brand:string;destination:string;active:number;expires_at:string|null;tags:string[];icon?:string;sort_order:number;created_at?:string};
 export type BuilderData={creator:BuilderProfile;links:BuilderLink[]};
 export type PageDraft={profile:BuilderProfile;links:BuilderLink[]};
 export type DraftHistory={present:PageDraft;past:PageDraft[];future:PageDraft[]};

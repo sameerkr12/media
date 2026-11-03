@@ -3,8 +3,8 @@ import type {BuilderData,BuilderLink} from './page-builder-model';
 export class SupabaseError extends Error {
  constructor(public code:string,public status:number){super(`Supabase request failed (${code})`);}
 }
-export type Creator={id:string;name:string;handle:string;email:string|null;user_id:string|null;bio:string;theme:string;layout:string;font:string;created_at:string};
-export type Link={id:string;slug:string;title:string;brand:string;creator_id:string;destination:string;active:number;expires_at:string|null;created_at:string;tags?:string[];sort_order?:number};
+export type Creator={id:string;name:string;handle:string;email:string|null;user_id:string|null;background?:string;bio:string;theme:string;layout:string;font:string;created_at:string};
+export type Link={id:string;slug:string;title:string;brand:string;creator_id:string;destination:string;active:number;expires_at:string|null;created_at:string;icon?:string;tags?:string[];sort_order?:number};
 type Table='creators'|'links'|'admins'|'clicks'|'admin_login_attempts';
 // Individual eq filters are literal values; URLSearchParams encodes them.
 export const eq=(value:string)=>'eq.'+value;

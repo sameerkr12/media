@@ -86,3 +86,5 @@ npm run test:vps
 ```
 
 The full integration test requires local `.dev.vars` with Supabase server/anon keys and ADMIN_PASSWORD. It starts the native server on loopback port 3001, creates one disposable confirmed Auth user, verifies real login, header-spoofing denial and the admin password gate, then removes the test user. Run against a test Supabase project for regular CI. No emails are sent by this test.
+
+For the expanded Page Studio, also apply `202611040001_design_options.sql` then `202611040002_design_palettes.sql` before deploying.
