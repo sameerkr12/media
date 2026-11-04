@@ -5,7 +5,7 @@ assert.deepEqual(validateVpsEnvironment(valid),[]);
 assert(validateVpsEnvironment({...valid,AUTH_MODE:'platform'}).length);
 assert(validateVpsEnvironment({...valid,SITE_DOMAIN:'another.empire.test'}).length);
 assert(validateVpsEnvironment({...valid,APP_URL:'http://media.empire.test'}).length);
-assert(validateVpsEnvironment({...valid,ADMIN_PASSWORD:'short'}).length);
+assert.deepEqual(validateVpsEnvironment({...valid,ADMIN_PASSWORD:undefined}),[]);
 assert(validateVpsEnvironment({...valid,SUPABASE_SECRET_KEY:'anon-key'}).length);
 assert(validateVpsEnvironment({}).length);
 console.log('PASS: VPS preflight accepts valid configuration and rejects insecure/missing settings.');

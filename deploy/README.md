@@ -88,3 +88,9 @@ npm run test:vps
 The full integration test requires local `.dev.vars` with Supabase server/anon keys and ADMIN_PASSWORD. It starts the native server on loopback port 3001, creates one disposable confirmed Auth user, verifies real login, header-spoofing denial and the admin password gate, then removes the test user. Run against a test Supabase project for regular CI. No emails are sent by this test.
 
 For the expanded Page Studio, also apply `202611040001_design_options.sql` then `202611040002_design_palettes.sql` before deploying.
+
+## Single account sign-in
+
+The current release uses one Supabase email/password login for admins and creators. Only the confirmed account matching server `ADMIN_EMAIL` has admin access; legacy admins-table entries do not grant access. `ADMIN_PASSWORD` and the second unlock screen are retired. Set `ADMIN_EMAIL=business@empirexmedia.com` on the VPS.
+
+Create each creator as a separate confirmed user in Supabase Authentication with their own email and password, then assign that exact email under Admin → Creator pages → Portal access. Give creators `/login` or `/creator`; each account sees only its assigned page and analytics. Unassigned accounts see no creator data. Passwords stay in Supabase Auth, not creator records. Existing account passwords continue working. Earlier two-password instructions in this document are superseded by this section.

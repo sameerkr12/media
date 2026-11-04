@@ -20,6 +20,7 @@
     "start:vps": "node --env-file=.env.vps scripts/start-vps.mjs",
     "test:vps": "node tests/vps-config.test.mjs && node tests/vps-integration.mjs",
     "test:dashboard": "node tests/dashboard-utils.test.mjs",
+    "test:access": "node tests/account-access.test.mjs",
     "test:builder": "node tests/page-builder-model.test.mjs"
   },
   "dependencies": {

@@ -98,3 +98,9 @@ Open Design on a creator card, or visit `/creator/design` from a creator account
 Apply `supabase/migrations/202611030001_page_builder.sql`, then `supabase/migrations/202611030002_page_builder_conflicts.sql`, in Supabase SQL Editor before deploying this version. Creator accounts can edit only their assigned page; unlocked admins can select any creator. Run `npm run test:builder` for model checks, and `node tests/page-builder-integration.mjs` against the local built Worker for database/API checks using disposable records.
 
 Page Studio design expansion: apply `202611040001_design_options.sql` and `202611040002_design_palettes.sql` in order. Link logos include platform presets, generic finance icons, and custom public HTTPS image URLs. Background styles, palettes and button shapes combine freely. Custom image hosting must allow public image loading.
+
+## Single account sign-in
+
+The current release uses one Supabase email/password login for admins and creators. Only the confirmed account matching server `ADMIN_EMAIL` has admin access; legacy admins-table entries do not grant access. `ADMIN_PASSWORD` and the second unlock screen are retired. Set `ADMIN_EMAIL=business@empirexmedia.com` on the VPS.
+
+Create each creator as a separate confirmed user in Supabase Authentication with their own email and password, then assign that exact email under Admin → Creator pages → Portal access. Give creators `/login` or `/creator`; each account sees only its assigned page and analytics. Unassigned accounts see no creator data. Passwords stay in Supabase Auth, not creator records. Existing account passwords continue working. Earlier two-password instructions in this document are superseded by this section.
