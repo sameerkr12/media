@@ -94,3 +94,9 @@ For the expanded Page Studio, also apply `202611040001_design_options.sql` then 
 The current release uses one Supabase email/password login for admins and creators. Only the confirmed account matching server `ADMIN_EMAIL` has admin access; legacy admins-table entries do not grant access. `ADMIN_PASSWORD` and the second unlock screen are retired. Set `ADMIN_EMAIL=business@empirexmedia.com` on the VPS.
 
 Create each creator as a separate confirmed user in Supabase Authentication with their own email and password, then assign that exact email under Admin → Creator pages → Portal access. Give creators `/login` or `/creator`; each account sees only its assigned page and analytics. Unassigned accounts see no creator data. Passwords stay in Supabase Auth, not creator records. Existing account passwords continue working. Earlier two-password instructions in this document are superseded by this section.
+
+## Password setup and recovery
+
+Admin → Creator pages → Portal access now accepts an optional password (12–128 characters). With a password, saving creates a confirmed Auth account if missing or updates its password; only the main admin can use this action. Leave the password blank to assign an email without changing its credentials.
+
+For Forgot password, configure Supabase Authentication → URL Configuration with `https://empirexmedia.com/reset-password` and, for local testing, `http://127.0.0.1:3000/reset-password` as redirect URLs. Configure Supabase SMTP for delivery to creator emails. Keep the recovery email template using the default ConfirmationURL. Recovery links are verified by Supabase before a password can be changed.

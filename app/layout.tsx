@@ -9,6 +9,6 @@ export default function Layout({children}:{children:React.ReactNode}){return <ht
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-ZERRGKZ2CY');
+  if(window.location.pathname!=='/reset-password')gtag('config', 'G-ZERRGKZ2CY');
  `}}/>
  </head><body>{children}</body></html>;}

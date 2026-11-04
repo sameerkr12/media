@@ -1,3 +1,5 @@
+import {setCreatorPassword,strongPassword} from '../../../lib/account-management';
+import {env} from '#runtime-env';
 import {publicOrigin} from '../../../lib/supabase-auth';
 import {eq,SupabaseError,type Link} from '../../../lib/supabase-rest';
 import {themes,layouts,fonts} from '../../../lib/appearance';
@@ -18,7 +20,7 @@ export async function POST(request:Request){try{
   requireAdmin(user);const name=clean(b.name,80),handle=clean(b.handle,50).replace(/^@/,'').toLowerCase();if(!/^[A-Za-z0-9._]+$/.test(handle))throw new HttpError(400,'Use an Instagram handle without a URL.');if(await db.one('creators',{handle:eq(handle.toLowerCase())}))throw new HttpError(409,'A page already exists for this handle.');
   await db.insert('creators',{id:crypto.randomUUID(),name,handle,bio:clean(b.bio||'',240,false),email:emailAddress(b.email),created_at:new Date().toISOString()});return json({ok:true});
  }
- if(b.action==='creatorEmail'){requireAdmin(user);const id=clean(b.id,60);const email=emailAddress(b.email);const old=await db.one('creators',{id:eq(id),select:'id'});if(!old)throw new HttpError(404,'Creator not found.');await db.update('creators',{email,user_id:null},{id:eq(id)});return json({ok:true});}
+ if(b.action==='creatorEmail'){requireAdmin(user);const id=clean(b.id,60);const email=emailAddress(b.email);const old=await db.one('creators',{id:eq(id),select:'id'});if(!old)throw new HttpError(404,'Creator not found.');let accountId:string|null=null;if(b.password){if(!email)throw new HttpError(400,'Enter the creator email first.');if(email===env.ADMIN_EMAIL?.toLowerCase().trim())throw new HttpError(403,'Use Forgot password to reset the owner account.');const duplicate=await db.one<{id:string}>('creators',{email:eq(email),select:'id'});if(duplicate&&duplicate.id!==id)throw new HttpError(409,'Email belongs to another creator.');accountId=await setCreatorPassword(email,strongPassword(b.password));}await db.update('creators',{email,user_id:accountId},{id:eq(id)});return json({ok:true});}
  if(b.action==='appearance'){
   const id=clean(b.id,60);if(!user.admin&&id!==own?.id)throw new HttpError(403,'You can only style your own page.');
   if(!themes.some(t=>t.id===b.theme)||!layouts.some(t=>t.id===b.layout)||!fonts.some(t=>t.id===b.font))throw new HttpError(400,'Choose a supported theme, button style and font.');
