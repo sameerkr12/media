@@ -1,0 +1,4 @@
+import {authRequest,strongPassword} from '../../../../lib/account-management';
+import {checkOrigin,json,HttpError,emailAddress} from '../../../../lib/tracker';
+import {publicOrigin} from '../../../../lib/supabase-auth';
+export async function POST(request:Request){try{checkOrigin(request);const raw=await request.text();if(raw.length>4096)throw new HttpError(413,'Request too large.');const body=JSON.parse(raw),email=emailAddress(body.email);if(!email)throw new HttpError(400,'Enter your email.');await authRequest('signup?redirect_to='+encodeURIComponent(publicOrigin(request)+'/login'),'POST',{email,password:strongPassword(body.password)});return json({ok:true});}catch(error){return json({error:error instanceof HttpError?error.message:'Unable to create account. Please try again.'},error instanceof HttpError?error.status:400);}}

@@ -104,3 +104,9 @@ For Forgot password, configure Supabase Authentication → URL Configuration wit
 ## Admin-only workspace
 
 The current version has one main administrator, identified by `ADMIN_EMAIL`. Creator portal sign-in, email assignments and creator password controls are retired. All private dashboard and page-builder requests require this owner account, including requests from previously signed-in creators. Public creator pages and click tracking continue to work. Existing Auth records are not deleted, but non-owner accounts cannot use this application. Forgot password is available only for the main admin. Earlier creator-access instructions are superseded.
+
+## Public accounts and self-service pages
+
+This release supersedes the admin-only model. Anyone can register at `/login`, confirm their email, then choose a unique handle at `/create-page`. Each account owns one creator page; server-side checks scope links, designs and analytics to its authenticated user. The verified account matching `ADMIN_EMAIL` remains the sole full-access admin. Existing creator assignments remain supported.
+
+Before public launch enable Supabase new-user signups and Confirm email, configure production SMTP, and allow `/login` and `/reset-password` redirect URLs for both the production origin and local testing origin. Keep the default confirmation email template using ConfirmationURL. Supabase handles email verification and authentication rate limits. The application does not treat user metadata as authorization. No new SQL migration is required: unique user, email and handle indexes already exist.

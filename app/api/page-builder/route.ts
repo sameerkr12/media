@@ -19,7 +19,7 @@ function failure(error:unknown){
 async function scope(request:Request,requested:unknown){
  const user=await identity();
  if(user.admin){if(typeof requested!=='string'||!requested.trim())throw new HttpError(400,'Choose a creator to design.');return clean(requested,60);}
- const own=await creatorFor(user);if(!own)throw new HttpError(403,'Ask your admin to assign your sign-in email to a creator page.');
+ const own=await creatorFor(user);if(!own)throw new HttpError(403,'Create your page at /create-page first.');
  if(requested!==undefined&&requested!==null&&requested!==own.id)throw new HttpError(403,'You can only design your own creator page.');
  return own.id;
 }
