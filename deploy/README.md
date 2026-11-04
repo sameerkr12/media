@@ -100,3 +100,7 @@ Create each creator as a separate confirmed user in Supabase Authentication with
 Admin → Creator pages → Portal access now accepts an optional password (12–128 characters). With a password, saving creates a confirmed Auth account if missing or updates its password; only the main admin can use this action. Leave the password blank to assign an email without changing its credentials.
 
 For Forgot password, configure Supabase Authentication → URL Configuration with `https://empirexmedia.com/reset-password` and, for local testing, `http://127.0.0.1:3000/reset-password` as redirect URLs. Configure Supabase SMTP for delivery to creator emails. Keep the recovery email template using the default ConfirmationURL. Recovery links are verified by Supabase before a password can be changed.
+
+## Admin-only workspace
+
+The current version has one main administrator, identified by `ADMIN_EMAIL`. Creator portal sign-in, email assignments and creator password controls are retired. All private dashboard and page-builder requests require this owner account, including requests from previously signed-in creators. Public creator pages and click tracking continue to work. Existing Auth records are not deleted, but non-owner accounts cannot use this application. Forgot password is available only for the main admin. Earlier creator-access instructions are superseded.

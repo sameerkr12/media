@@ -104,3 +104,7 @@ Page Studio design expansion: apply `202611040001_design_options.sql` and `20261
 The current release uses one Supabase email/password login for admins and creators. Only the confirmed account matching server `ADMIN_EMAIL` has admin access; legacy admins-table entries do not grant access. `ADMIN_PASSWORD` and the second unlock screen are retired. Set `ADMIN_EMAIL=business@empirexmedia.com` on the VPS.
 
 Create each creator as a separate confirmed user in Supabase Authentication with their own email and password, then assign that exact email under Admin → Creator pages → Portal access. Give creators `/login` or `/creator`; each account sees only its assigned page and analytics. Unassigned accounts see no creator data. Passwords stay in Supabase Auth, not creator records. Existing account passwords continue working. Earlier two-password instructions in this document are superseded by this section.
+
+## Admin-only workspace
+
+The current version has one main administrator, identified by `ADMIN_EMAIL`. Creator portal sign-in, email assignments and creator password controls are retired. All private dashboard and page-builder requests require this owner account, including requests from previously signed-in creators. Public creator pages and click tracking continue to work. Existing Auth records are not deleted, but non-owner accounts cannot use this application. Forgot password is available only for the main admin. Earlier creator-access instructions are superseded.

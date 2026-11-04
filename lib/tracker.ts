@@ -5,7 +5,7 @@ import {getChatGPTUser} from '../app/chatgpt-auth';
 export function database(){const settings=env as unknown as Record<string,string>;const url=settings.SUPABASE_URL;const key=settings.SUPABASE_SECRET_KEY||settings.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new HttpError(503,'Supabase database is not configured.');return createSupabaseDatabase(url,key);}
 export class HttpError extends Error {constructor(public status:number,message:string){super(message);}}
 export async function eligibleIdentity(){const user=await getChatGPTUser();if(!user)throw new HttpError(401,'Sign in to continue.');const email=user.email.toLowerCase().trim();const admin=!!env.ADMIN_EMAIL&&email===env.ADMIN_EMAIL.toLowerCase().trim();return {...user,admin,email};}
-export async function identity(){return eligibleIdentity();}
+export async function identity(){const user=await eligibleIdentity();requireAdmin(user);return user;}
 export function requireAdmin(user:{admin:boolean}){if(!user.admin)throw new HttpError(403,'Admin access is required.');}
 export function checkOrigin(request:Request){const origin=request.headers.get('origin');if(!origin||origin!==publicOrigin(request))throw new HttpError(403,'This request must come from your EmpireX dashboard.');}
 export function clean(value:unknown,max:number,required=true){if(typeof value!=='string'||value.trim().length>max||(required&&!value.trim()))throw new HttpError(400,'Please check the required fields and their length.');return value.trim();}
