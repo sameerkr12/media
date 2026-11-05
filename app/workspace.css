@@ -39,3 +39,5 @@
 @media(max-width:620px){.workspace .table-actions .row-button{min-height:40px;font-size:11px}.workspace .bulk-toolbar .row-button{min-height:39px}.workspace .topbar-right .row-button{min-height:36px}}
 
 .workspace th.numeric{width:75px;padding-inline:12px;white-space:normal;line-height:1.5}
+
+.login-actions{display:flex;flex-direction:column;align-items:center;gap:12px;margin:22px 0}.login-actions .text-button{display:block;min-height:38px;padding:8px 12px;background:transparent;color:#dfc393;line-height:1.5}.workspace .short-link-copy{display:flex;align-items:center;gap:12px;max-width:420px;white-space:normal;overflow-wrap:anywhere;text-align:left;padding:10px 12px;margin-top:10px;border:1px solid #655336;border-radius:7px;background:#dfc3930b;color:#edcf9f;font:12px monospace;line-height:1.6}.workspace .short-link-copy svg{flex-shrink:0}
