@@ -110,3 +110,5 @@ The current version has one main administrator, identified by `ADMIN_EMAIL`. Cre
 This release supersedes the admin-only model. Anyone can register at `/login`, confirm their email, then choose a unique handle at `/create-page`. Each account owns one creator page; server-side checks scope links, designs and analytics to its authenticated user. The verified account matching `ADMIN_EMAIL` remains the sole full-access admin. Existing creator assignments remain supported.
 
 Before public launch enable Supabase new-user signups and Confirm email, configure production SMTP, and allow `/login` and `/reset-password` redirect URLs for both the production origin and local testing origin. Keep the default confirmation email template using ConfirmationURL. Supabase handles email verification and authentication rate limits. The application does not treat user metadata as authorization. No new SQL migration is required: unique user, email and handle indexes already exist.
+
+Link deletion requires `202611050001_delete_links.sql`. Page Studio Delete removes a link from the draft; saving permanently removes that link and its click records. Undo is available before saving.

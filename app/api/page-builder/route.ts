@@ -52,6 +52,5 @@ export async function POST(request:Request){try{
   if(old&&row.expires_at===old.expires_at)expiresAt=old.expires_at;else expiresAt=expiry(row.expires_at);
   return {icon,id:linkId,slug:old?.slug||crypto.randomUUID().replaceAll('-','').slice(0,12),title:clean(row.title,120),brand:clean(row.brand||'Website',80),destination:destination(row.destination,publicOrigin(request)),active:row.active,expires_at:expiresAt,tags:normalizeTags(row.tags as string[]),sort_order:index};
  });
- if(current.links.some(link=>!seen.has(link.id)))throw new HttpError(409,'A saved link is missing from this draft. Reload, then use Hide to remove it from the public page.');
  const result=await db.savePage(id,body.version as number,profile,links);return json(result);
 }catch(error){return failure(error);}}
